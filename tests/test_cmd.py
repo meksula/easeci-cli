@@ -24,6 +24,16 @@ class TestSum(unittest.TestCase):
 
         self.assertEqual(1, len(parsed))
 
+    def test_should_correctly_escaping_double_quotes(self):
+        _input_with_quotes = 'ease connect --bash "mkdir -p ease-cli" --protocol http --host "localhost:8080" --retry 45'
+        parsed = self._cmd.parse(_input_with_quotes)
+
+        self.assertEqual(6, len(parsed))
+        self.assertEqual('\"mkdir -p ease-cli\"', parsed['--bash'])
+        self.assertEqual('\"localhost:8080\"', parsed['--host'])
+        self.assertEqual('45', parsed['--retry'])
+        self.assertEqual('http', parsed['--protocol'])
+
 
 if __name__ == '__main__':
     unittest.main()
