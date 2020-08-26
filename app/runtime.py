@@ -1,4 +1,6 @@
 import sys
+
+from app.additionals import ProgressBar
 from app.output import bye, header, err
 from app.set.cmds_dict import cmds_av
 
@@ -14,6 +16,8 @@ class Context:
         self.prompt_head = self.whoami + ':~$'
 
     def event_loop(self):
+        bar = ProgressBar(bars=25, latency=0.04, title='EaseCI CLI is ready now')
+        bar.run()
         while not self.is_interrupted:
             self.prompt()
             self.exec()
