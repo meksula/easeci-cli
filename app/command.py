@@ -2,6 +2,7 @@ from app.output import err, stdout
 
 
 class Cmd:
+    _option = 'cmd_opt'
 
     def __init__(self, cmd_name, err_txt, info, opts):
         self.name = cmd_name
@@ -12,9 +13,9 @@ class Cmd:
     def info(self):
         stdout(self.short_info)
 
-    def handle(self, keyboard_input):
+    def handle(self, ctx, keyboard_input):
         parsed = self.parse(keyboard_input)
-        self.invoke(parsed)
+        self.invoke(ctx, parsed)
 
     def parse(self, keyboard_input):
         parts = keyboard_input.split()
@@ -65,7 +66,7 @@ class Cmd:
                     params_dict['standalone'].append(params[index])
         return params_dict
 
-    def invoke(self, params):
+    def invoke(self, ctx, params):
         raise NotImplementedError()
 
     # Should provide complete instance of specific child object
