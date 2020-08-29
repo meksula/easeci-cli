@@ -2,7 +2,7 @@ from colorama import Fore
 
 
 def header(prompt_head):
-    print(Fore.GREEN, '\033[1m' + prompt_head + '\033[0m', Fore.RESET, end = '')
+    print(Fore.GREEN, '\033[1m' + prompt_head + '\033[0m', Fore.RESET, end='')
 
 
 def bye():
