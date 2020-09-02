@@ -16,6 +16,7 @@ class Context:
         self.whoami = 'not-connected@local'
         self.prompt_head = '🔴 ' + self.whoami + ':~$'
         self.connection_uuid = None
+        self.host = None
         # keyboard.add_hotkey('ctrl+shift+a', print, args=('triggered', 'hotkey'))
 
     def event_loop(self):
@@ -57,9 +58,11 @@ class Context:
         self.whoami = conn.node_name + '@' + conn.username
         self.prompt_head = '🟢 ' + self.whoami + ':~$'
         self.connection_uuid = conn.connection_uuid
+        self.host = conn.host
 
     def disconnect(self):
         self.connected = False
         self.whoami = 'not-connected@local'
         self.prompt_head = '🔴 ' + self.whoami + ':~$'
         self.connection_uuid = None
+        self.host = None

@@ -3,7 +3,7 @@ import socket
 import sys
 
 from app.command import Cmd
-from app.output import bye, err, stdout
+from app.output import bye, err, stdout, table
 import http.client
 
 
@@ -21,15 +21,30 @@ class Connect(Cmd):
             self.username = username
 
     class ConnectionResponse:
-        def __init__(self, response):
+        def __init__(self, response, host):
+            self.host = host
             self.node_name = response.get('nodeName')
             self.connection_uuid = response.get('connectionUuid')
             self.username = response.get('username')
             self.connection_state = response.get('connectionState')
 
+    class ConnectionList:
+        class Connection:
+            def __init__(self, conn):
+                self.connection_uuid = conn.get('connectionUuid')
+                self.connection_state = conn.get('connectionState')
+                self.username = conn.get('username')
+                self.host = conn.get('host')
+
+        def __init__(self, response):
+            self.connections = [self.Connection(conn) for conn in response]
+
     def invoke(self, ctx, params):
         option = params[self._option]
         if option == 'connect':
+            if ctx.connected:
+                err(f' You are now connected to EaseCI Core server.\n   Close connection and next establish new one.')
+                return
             host = ''
             username = ''
             protocol = None
@@ -66,11 +81,12 @@ class Connect(Cmd):
                 resp = connection.getresponse()
                 if resp.status == 200:
                     resp_json = json.loads(resp.read().decode())
-                    conn_resp = self.ConnectionResponse(resp_json)
-                    ctx.connect(conn_resp)
+                    conn_resp = self.ConnectionResponse(resp_json, host)
                     if conn_resp.connection_state == 'ESTABLISHED':
                         stdout(f' 🔌 Now you are connected to {host} as {username}')
-                    if conn_resp.connection_state == 'CONNECTIONS_LIMIT':
+                        ctx.connect(conn_resp)
+                        return
+                    elif conn_resp.connection_state == 'CONNECTIONS_LIMIT':
                         stdout(f' You received limit of connections as {username}')
                     else:
                         err(f' Some unrecognized error occurred while connection attempt to {host}')
@@ -80,4 +96,33 @@ class Connect(Cmd):
                 err(f' Host {host} is not recognizable')
             except ConnectionRefusedError:
                 err(f' Host {host} is not reachable')
-
+        if option == 'disconnect':
+            if not ctx.connected:
+                err(f' Connection is not established')
+                return
+            else:
+                stdout(f' Closing your connection identified by UUID: {ctx.connection_uuid}')
+                ctx.disconnect()
+        if option == 'connection':
+            additional_cmd = ''
+            standalone_params = params.get('standalone')
+            if '-l' in standalone_params or '--list' in standalone_params:
+                additional_cmd = 'list'
+            else:
+                return
+            if additional_cmd == 'list':
+                if ctx.connected:
+                    connection = http.client.HTTPConnection(ctx.host)
+                    connection.request('GET', '/client/connections')
+                    resp = connection.getresponse()
+                    resp_json = json.loads(resp.read().decode())
+                    conn_list = self.ConnectionList(resp_json)
+                    table({
+                        'connectionUuid': 'Connection UUID',
+                        'connectionState': 'Connection State',
+                        'username': 'Username',
+                        'host': 'Connected IP'},
+                        conn_list.connections,
+                        title='Connection of ' + ctx.node_name + ' node')
+                else:
+                    err(' First of you need to connect some EaseCI Core server')
