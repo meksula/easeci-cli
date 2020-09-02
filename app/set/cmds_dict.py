@@ -5,7 +5,7 @@ from app.set.builtin_cmds import Exit, Connect
 cmds_av = {
     'exit': Exit('exit', '', '', []),
     'cmd': Cmd('cmd', 'Error cmd command', 'Info about cmd command', ['list']),
-    'ease': Connect('ease', 'Error', 'Info', ['connect', 'ping'])
+    'ease': Connect('ease', 'Error', 'Info', ['connect', 'connection', 'disconnect', 'ping'])
 }
 
 
