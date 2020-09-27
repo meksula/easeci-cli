@@ -36,6 +36,11 @@ class Connect(Cmd):
                 self.username = conn.get('username')
                 self.host = conn.get('host')
 
+            def __str__(self):
+                return f"Connection(connection_uuid={self.connection_uuid}, " \
+                       f"connection_state={self.connection_state}," \
+                       f" username={self.username}, host={self.host})"
+
         def __init__(self, response):
             self.connections = [self.Connection(conn) for conn in response]
 
@@ -104,7 +109,6 @@ class Connect(Cmd):
                 stdout(f' Closing your connection identified by UUID: {ctx.connection_uuid}')
                 ctx.disconnect()
         if option == 'connection':
-            additional_cmd = ''
             standalone_params = params.get('standalone')
             if '-l' in standalone_params or '--list' in standalone_params:
                 additional_cmd = 'list'
@@ -117,12 +121,15 @@ class Connect(Cmd):
                     resp = connection.getresponse()
                     resp_json = json.loads(resp.read().decode())
                     conn_list = self.ConnectionList(resp_json)
-                    table({
-                        'connectionUuid': 'Connection UUID',
-                        'connectionState': 'Connection State',
-                        'username': 'Username',
-                        'host': 'Connected IP'},
-                        conn_list.connections,
-                        title='Connection of ' + ctx.node_name + ' node')
+
+                    _columns = [
+                        'Connection UUID',
+                        'Connection State',
+                        'Username',
+                        'Connected IP'
+                    ]
+                    table(_columns,
+                          conn_list.connections,
+                          title='List of connections of ' + ctx.host + ' node')
                 else:
                     err(' First of you need to connect some EaseCI Core server')

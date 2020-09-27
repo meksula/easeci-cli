@@ -2,6 +2,7 @@ import json
 import unittest
 
 from app.output import table
+from app.set.builtin_cmds import Connect
 
 
 class TestOutput(unittest.TestCase):
@@ -13,6 +14,7 @@ class TestOutput(unittest.TestCase):
                      '{"connectionUuid":"5e3009f8-35a9-4e45-a4b8-c3d5fe0e312d","connectionState":"ALIVE","username":"gandhi","host":"127.0.0.1"},' \
                      '{"connectionUuid":"50227e3c-f920-415f-b903-7b08ba50e6b9","connectionState":"ALIVE","username":"johndoe","host":"127.0.0.1"},' \
                      '{"connectionUuid":"ef795185-fe4e-475f-bc90-d293bd9a330d","connectionState":"ALIVE","username":"ansible","host":"127.0.0.1"},' \
+                     '{"connectionUuid":"ef795185-fe4e-475f-bc90-d293bd9a330d","connectionState":"ALIVE","username":"this_is_very_long_username_to_test_only","host":"127.0.0.1"},' \
                      '{"connectionUuid":"84e962e3-40e5-46e4-8bfc-7151efd89689","connectionState":"ALIVE","username":"admin","host":"127.0.0.1"}]'
         _column_names = [
             'Connection UUID',
@@ -21,8 +23,11 @@ class TestOutput(unittest.TestCase):
             'Connected IP'
         ]
 
+        loaded = json.loads(_json_data)
+        conn = Connect.ConnectionList(loaded)
+
         table(
             _column_names,
-            json.loads(_json_data),
+            conn.connections,
             title='Established connections with EaseCI Core server'
         )
